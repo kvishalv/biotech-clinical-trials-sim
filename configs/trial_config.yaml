@@ -1,0 +1,55 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Trial Configuration
+# Every key here is versioned and hashed into the experiment registry.
+# Do NOT change values mid-run — create a new config version instead.
+# ──────────────────────────────────────────────────────────────────────────────
+
+trial:
+  name: "LONGEVITY-PHASE2-SIM"
+  version: "1.0.0"
+  description: "Synthetic Phase II longevity trial — composite biomarker endpoints"
+
+cohort:
+  n_patients: 500
+  n_sites: 8
+  treatment_arms:
+    - name: "placebo"
+      allocation: 0.33
+    - name: "low_dose"
+      allocation: 0.33
+    - name: "high_dose"
+      allocation: 0.34
+  inclusion_criteria:
+    min_age: 45
+    max_age: 80
+    min_bmi: 18.5
+    max_bmi: 35.0
+    required_conditions: []
+    excluded_conditions:
+      - "active_cancer"
+      - "end_stage_renal_disease"
+  dropout_rate_per_week: 0.005
+
+simulation:
+  n_weeks: 52
+  seed: 42
+  n_parallel_runs: 4
+  burnin_weeks: 4              # weeks before treatment starts
+
+outcome:
+  primary_endpoint: "epigenetic_age_acceleration"
+  secondary_endpoints:
+    - "inflammation_index"
+    - "metabolic_risk_index"
+    - "frailty_progression"
+  success_threshold_delta: -0.5  # minimum detectable effect size (Cohen's d)
+
+causal:
+  dag_definition: "configs/dag_longevity.yaml"  # pluggable DAG
+  estimand: "ATE"                                # ATE | ATT | CATE
+  confounder_adjustment: true
+
+tracking:
+  mlflow_uri: "http://localhost:5000"
+  experiment_name: "longevity-sim-v1"
+  log_artifacts: true

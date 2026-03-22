@@ -1,0 +1,95 @@
+version: "3.9"
+
+# ────────────────────────────────────────────────────────────────────────────
+# Biotech Clinical Trials Simulator — docker-compose
+#
+# Services:
+#   sim-api:    FastAPI simulation server (port 8000)
+#   mlflow:     MLflow experiment tracking UI (port 5000)
+#   ray-head:   Ray cluster head node (dashboard: 8265)
+#
+# Quick start:
+#   docker-compose up -d
+#   curl http://localhost:8000/health
+#   open http://localhost:5000           # MLflow UI
+#   open http://localhost:8265           # Ray dashboard
+# ────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Simulation API ──────────────────────────────────────────────────────────
+  sim-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: biotech-sim:latest
+    container_name: biotech-sim-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - RAY_ADDRESS=ray://ray-head:10001
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./configs:/app/configs:ro   # mount configs as read-only
+      - sim-outputs:/app/outputs    # persist simulation artifacts
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ── MLflow Experiment Tracking ──────────────────────────────────────────────
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.12.2
+    container_name: biotech-mlflow
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+        --backend-store-uri sqlite:///mlflow.db
+        --default-artifact-root /mlflow/artifacts
+        --host 0.0.0.0
+        --port 5000
+    volumes:
+      - mlflow-data:/mlflow
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ── Ray Head Node ───────────────────────────────────────────────────────────
+  # For production multi-node clusters, add ray-worker services below.
+  ray-head:
+    image: rayproject/ray:2.10.0-py311
+    container_name: biotech-ray-head
+    command: >
+      ray start --head
+        --node-ip-address=0.0.0.0
+        --port=6379
+        --ray-client-server-port=10001
+        --dashboard-host=0.0.0.0
+        --dashboard-port=8265
+        --block
+    ports:
+      - "8265:8265"   # Ray dashboard
+      - "6379:6379"   # Ray GCS port
+      - "10001:10001" # Ray client server
+    shm_size: "4gb"   # shared memory for Ray object store
+    restart: unless-stopped
+
+# ── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  mlflow-data:
+    driver: local
+  sim-outputs:
+    driver: local

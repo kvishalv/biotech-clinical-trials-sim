@@ -1,0 +1,123 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Biomarker Model Configuration
+# Controls all 9 composite biomarker simulation parameters.
+# ──────────────────────────────────────────────────────────────────────────────
+
+biomarkers:
+
+  inflammation_index:
+    description: "Composite of CRP, IL-6, TNF-alpha — higher = worse"
+    baseline_mean: 1.0
+    baseline_std: 0.3
+    ar1_coefficient: 0.75          # autocorrelation strength
+    patient_re_std: 0.2            # patient-level random effect std
+    site_assay_noise_std: 0.05     # site-specific measurement noise
+    treatment_effect:
+      placebo: 0.0
+      low_dose: -0.12
+      high_dose: -0.25
+    responder_fraction: 0.65       # fraction of patients who respond
+
+  metabolic_risk_index:
+    description: "Composite of fasting glucose, HbA1c, LDL/HDL ratio"
+    baseline_mean: 1.0
+    baseline_std: 0.25
+    ar1_coefficient: 0.80
+    patient_re_std: 0.15
+    site_assay_noise_std: 0.04
+    treatment_effect:
+      placebo: 0.01
+      low_dose: -0.08
+      high_dose: -0.18
+    responder_fraction: 0.60
+
+  epigenetic_age_acceleration:
+    description: "Biological age minus chronological age (Horvath/GrimAge proxy)"
+    baseline_mean: 2.5
+    baseline_std: 1.2
+    ar1_coefficient: 0.90
+    patient_re_std: 0.8
+    site_assay_noise_std: 0.15
+    treatment_effect:
+      placebo: 0.0
+      low_dose: -0.3
+      high_dose: -0.7
+    responder_fraction: 0.55
+
+  frailty_progression:
+    description: "Composite frailty index (grip strength, gait speed, exhaustion)"
+    baseline_mean: 0.15
+    baseline_std: 0.08
+    ar1_coefficient: 0.85
+    patient_re_std: 0.05
+    site_assay_noise_std: 0.02
+    treatment_effect:
+      placebo: 0.005            # slight worsening over time in placebo
+      low_dose: -0.003
+      high_dose: -0.008
+    responder_fraction: 0.50
+
+  organ_reserve_score:
+    description: "Composite kidney GFR, liver ALT/AST, cardiac LVEF proxy"
+    baseline_mean: 75.0
+    baseline_std: 10.0
+    ar1_coefficient: 0.88
+    patient_re_std: 6.0
+    site_assay_noise_std: 1.5
+    treatment_effect:
+      placebo: -0.2             # slight decline per week
+      low_dose: 0.1
+      high_dose: 0.3
+    responder_fraction: 0.58
+
+  latent_mitochondrial_dysfunction:
+    description: "Proxy: VO2max decline rate, lactate threshold, NAD+ proxy"
+    baseline_mean: 1.0
+    baseline_std: 0.35
+    ar1_coefficient: 0.78
+    patient_re_std: 0.25
+    site_assay_noise_std: 0.06
+    treatment_effect:
+      placebo: 0.0
+      low_dose: -0.10
+      high_dose: -0.22
+    responder_fraction: 0.52
+
+  immune_resilience:
+    description: "Lymphocyte count, NK cell activity, regulatory T-cell ratio"
+    baseline_mean: 1.0
+    baseline_std: 0.28
+    ar1_coefficient: 0.70
+    patient_re_std: 0.18
+    site_assay_noise_std: 0.07
+    treatment_effect:
+      placebo: 0.0
+      low_dose: 0.08
+      high_dose: 0.18
+    responder_fraction: 0.62
+
+  sleep_circadian_disruption:
+    description: "PSQI proxy, melatonin rhythm amplitude, cortisol slope"
+    baseline_mean: 1.0
+    baseline_std: 0.4
+    ar1_coefficient: 0.65
+    patient_re_std: 0.3
+    site_assay_noise_std: 0.03
+    treatment_effect:
+      placebo: 0.0
+      low_dose: -0.06
+      high_dose: -0.15
+    responder_fraction: 0.48
+
+  recovery_velocity:
+    description: "Weeks to return to baseline biomarker levels after acute stress"
+    baseline_mean: 2.0
+    baseline_std: 0.8
+    ar1_coefficient: 0.60
+    patient_re_std: 0.5
+    site_assay_noise_std: 0.1
+    treatment_effect:
+      placebo: 0.0
+      low_dose: -0.3
+      high_dose: -0.7
+    responder_fraction: 0.55
